@@ -35,4 +35,17 @@ public final class Requests {
       @NotBlank @Pattern(regexp = "GOOD|DAMAGED|LOST") String condition,
       @NotNull @DecimalMin("0.00") @Digits(integer = 10, fraction = 2) BigDecimal compensation,
       @Size(max = 500) String reason) {}
+
+  public record AccountCreate(
+      @NotBlank @Size(min = 3, max = 80) @Pattern(regexp = "[A-Za-z0-9._-]+") String username,
+      @NotBlank @Size(min = 8, max = 100) String password,
+      @NotBlank @Pattern(regexp = "ADMIN|LIBRARIAN|READER") String role,
+      Long readerId) {}
+
+  public record RoleChange(
+      @NotBlank @Pattern(regexp = "ADMIN|LIBRARIAN|READER") String role, Long readerId) {}
+
+  public record StatusChange(@NotNull Boolean enabled) {}
+
+  public record PasswordReset(@NotBlank @Size(min = 8, max = 100) String password) {}
 }

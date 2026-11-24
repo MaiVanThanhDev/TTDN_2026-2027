@@ -1,0 +1,37 @@
+# Chạy toàn bộ (MySQL + ứng dụng):   docker compose up -d --build
+# Mở: http://localhost:8080   (librarian / reader / admin, mật khẩu = DEMO_PASSWORD)
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: librarydb
+      MYSQL_USER: library
+      MYSQL_PASSWORD: ${DB_PASSWORD:-library-pass-123}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root-pass-123}
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-root-pass-123}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: demo   # tạo tài khoản + dữ liệu mẫu khi CSDL trống
+      DB_URL: jdbc:mysql://mysql:3306/librarydb?serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+      DB_USER: library
+      DB_PASSWORD: ${DB_PASSWORD:-library-pass-123}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-Demo-password-123}
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql-data:

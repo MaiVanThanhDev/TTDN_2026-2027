@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Profile("demo")
 public class DemoData {
   @Bean
+  @org.springframework.core.annotation.Order(1)
   CommandLineRunner seed(
       AccountRepository accounts,
       ReaderRepository readers,

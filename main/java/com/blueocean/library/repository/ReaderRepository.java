@@ -8,4 +8,10 @@ public interface ReaderRepository extends JpaRepository<Reader, Long> {
   @Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
   @Query("select e from Reader e where e.id=:id")
   java.util.Optional<Reader> lockById(@Param("id") Long id);
+
+  java.util.Optional<Reader> findByAccountId(Long accountId);
+
+  java.util.List<Reader> findByAccountIdIn(java.util.Collection<Long> accountIds);
+
+  java.util.List<Reader> findByAccountIsNullAndActiveTrueOrderByCode();
 }

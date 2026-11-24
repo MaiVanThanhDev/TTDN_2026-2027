@@ -48,6 +48,18 @@ public final class Views {
         l.status);
   }
 
+  public static Map<String, Object> account(Account a, Reader linked) {
+    Map<String, Object> m = new LinkedHashMap<>();
+    m.put("id", a.id);
+    m.put("username", a.username);
+    m.put("role", a.role);
+    m.put("enabled", a.enabled);
+    m.put("readerId", linked == null ? null : linked.id);
+    m.put("readerCode", linked == null ? null : linked.code);
+    m.put("readerName", linked == null ? null : linked.fullName);
+    return m;
+  }
+
   public static Map<String, Object> detail(LoanDetail d) {
     Map<String, Object> m = new LinkedHashMap<>();
     m.put("id", d.id);

@@ -34,12 +34,21 @@ public class SecurityConfig {
   SecurityFilterChain chain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(
             a ->
-                a.requestMatchers("/", "/index.html", "/app.js", "/style.css", "/favicon.svg", "/api/csrf", "/login", "/error")
+                a.requestMatchers("/", "/index.html", "/app.js", "/style.css", "/favicon.svg", "/api/csrf", "/api/demo-accounts", "/login", "/error")
                     .permitAll()
-                    .requestMatchers("/api/me", "/api/me/**")
+                    // Mọi người đã đăng nhập: thông tin phiên của mình
+                    .requestMatchers("/api/me")
                     .authenticated()
+                    // Độc giả: lịch sử mượn của chính mình
+                    .requestMatchers("/api/me/**")
+                    .hasRole("READER")
+                    // Quản trị viên: tài khoản, phân quyền, thống kê
+                    .requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
+                    // Thủ thư và độc giả: tra cứu sách, danh mục
                     .requestMatchers(HttpMethod.GET, "/api/books/**", "/api/catalog/**")
-                    .hasAnyRole("ADMIN", "LIBRARIAN", "READER")
+                    .hasAnyRole("LIBRARIAN", "READER")
+                    // Thủ thư: quản lý sách, độc giả, mượn/trả, quá hạn, tiền phạt
                     .requestMatchers(
                         "/api/books/**",
                         "/api/copies/**",
