@@ -36,8 +36,11 @@ public class LoanController {
 
   @GetMapping("/loans")
   public Object list(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    return s.list(page, size);
+      @RequestParam(defaultValue = "") String q,
+      @RequestParam(defaultValue = "") String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return s.list(q, status, page, size);
   }
 
   @GetMapping("/loans/{id}/details")

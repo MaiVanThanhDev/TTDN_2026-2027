@@ -63,7 +63,10 @@ public final class Views {
   public static Map<String, Object> detail(LoanDetail d) {
     Map<String, Object> m = new LinkedHashMap<>();
     m.put("id", d.id);
-    m.put("copyId", loaded(d.bookCopy).id);
+    BookCopy copy = loaded(d.bookCopy);
+    m.put("copyId", copy.id);
+    m.put("copyCode", copy.code);
+    m.put("bookTitle", loaded(copy.bookTitle).title);
     m.put("dueDate", d.dueDate);
     m.put("returnedAt", d.returnedAt);
     m.put("status", d.status);

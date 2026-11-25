@@ -126,8 +126,33 @@ public class LoanService {
   }
 
   @Transactional(readOnly = true)
-  public Page<Map<String, Object>> list(int p, int size) {
-    return loans.findAll(CatalogService.page(p, size)).map(Views::loan);
+  public Page<Map<String, Object>> list(String q, String status, int p, int size) {
+    String text = q == null ? "" : q.trim();
+    String st = status == null ? "" : status.trim().toUpperCase(Locale.ROOT);
+    if (text.isEmpty() && st.isEmpty())
+      return loans.findAll(CatalogService.page(p, size)).map(Views::loan);
+    check(Set.of("", "OPEN", "CLOSED", "OVERDUE").contains(st), "Trạng thái lọc không hợp lệ");
+    boolean overdue = st.equals("OVERDUE");
+    return loans
+        .search(
+            text.isEmpty() ? "" : "%" + escapeLike(text.toLowerCase(Locale.ROOT)) + "%",
+            loanNumber(text),
+            overdue ? "OPEN" : st,
+            overdue,
+            LocalDate.now(clock),
+            CatalogService.page(p, size))
+        .map(Views::loan);
+  }
+
+  /** "PM0012", "#PM12", "12" → 12; không phải số phiếu → null. */
+  static Long loanNumber(String text) {
+    String digits = text.replaceFirst("(?i)^#?(PM)?", "");
+    if (!digits.matches("[0-9]{1,18}")) return null;
+    return Long.parseLong(digits);
+  }
+
+  private static String escapeLike(String s) {
+    return s.replace("!", "!!").replace("%", "!%").replace("_", "!_");
   }
 
   @Transactional(readOnly = true)
@@ -149,6 +174,7 @@ public class LoanService {
         .map(
             d -> {
               var m = Views.detail(d);
+              m.put("loanId", Views.loaded(d.loan).id);
               m.put("readerId", Views.loaded(Views.loaded(d.loan).reader).id);
               m.put("readerName", Views.loaded(Views.loaded(d.loan).reader).fullName);
               m.put(

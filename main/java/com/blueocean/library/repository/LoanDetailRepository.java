@@ -11,10 +11,10 @@ public interface LoanDetailRepository extends JpaRepository<LoanDetail, Long> {
 
   long countByLoanReaderIdAndStatus(Long readerId, String status);
 
-  @EntityGraph(attributePaths = {"bookCopy"})
+  @EntityGraph(attributePaths = {"bookCopy", "bookCopy.bookTitle"})
   java.util.List<LoanDetail> findByLoanId(Long id);
 
-  @EntityGraph(attributePaths = {"loan", "loan.reader", "bookCopy"})
+  @EntityGraph(attributePaths = {"loan", "loan.reader", "bookCopy", "bookCopy.bookTitle"})
   org.springframework.data.domain.Page<LoanDetail> findByStatusAndDueDateBefore(
       String status, java.time.LocalDate date, org.springframework.data.domain.Pageable page);
 }

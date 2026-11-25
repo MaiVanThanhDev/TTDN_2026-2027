@@ -133,6 +133,31 @@ class ApiTest {
   }
 
   @Test
+  @WithMockUser(roles = "LIBRARIAN")
+  void searchLoans() throws Exception {
+    Long id = (Long) service.borrow(new Borrow(reader.id, List.of(c1.id)), "staff").get("id");
+    em.flush();
+    String pm = "PM" + String.format("%04d", id);
+    for (String q : List.of(pm, "#" + pm.toLowerCase(), String.valueOf(id), "dg01", "read", "c1"))
+      mvc.perform(get("/api/loans").param("q", q))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.totalElements").value(1))
+          .andExpect(jsonPath("$.content[0].id").value(id));
+    mvc.perform(get("/api/loans").param("q", "C2")).andExpect(jsonPath("$.totalElements").value(0));
+    mvc.perform(get("/api/loans").param("q", "%")).andExpect(jsonPath("$.totalElements").value(0));
+    mvc.perform(get("/api/loans").param("status", "OPEN"))
+        .andExpect(jsonPath("$.totalElements").value(1));
+    mvc.perform(get("/api/loans").param("status", "CLOSED"))
+        .andExpect(jsonPath("$.totalElements").value(0));
+    mvc.perform(get("/api/loans").param("status", "OVERDUE"))
+        .andExpect(jsonPath("$.totalElements").value(0));
+    mvc.perform(get("/api/loans").param("status", "XYZ")).andExpect(status().is4xxClientError());
+    mvc.perform(get("/api/loans/" + id + "/details"))
+        .andExpect(jsonPath("$[0].copyCode").value("C1"))
+        .andExpect(jsonPath("$[0].bookTitle").value("Java"));
+  }
+
+  @Test
   void queryCountDoesNotGrowPerBook() {
     for (int i = 0; i < 10; i++) {
       BookTitle b = new BookTitle();
